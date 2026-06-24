@@ -4,13 +4,11 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The three core actions I wanted PawPal+ to support were adding a pet, scheduling care tasks like walks or medication, and viewing a sorted daily schedule. My initial UML design used four main classes: `Owner`, `Pet`, `Task`, and `Scheduler`. `Owner` stores multiple pets, `Pet` stores pet details and its task list, `Task` represents one care activity, and `Scheduler` acts as the organizer that sorts, filters, completes, and checks tasks. I kept the design simple so the Streamlit UI could call clear backend methods instead of mixing scheduling logic into the page.
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+During the initial design pass, I added `due_date`, `frequency`, and `completed` directly to `Task` because recurring tasks and completion status are central to the assignment. I also made `Scheduler` depend on `Owner` instead of storing its own separate task list, because the owner already connects all pets and tasks. This avoids duplicated data and makes the relationships easier to reason about.
 
 ---
 
