@@ -8,11 +8,10 @@ PawPal AI keeps that Module 2 foundation and adds an applied AI planning layer. 
 
 ## Visual Demo
 
-Open `index.html` or `demo.html` in a browser for a polished project overview with a cartoon PawPal AI infographic and sample schedule.
+Open `pawpal_website_demo.html` in a browser for a polished project overview with a cartoon PawPal AI infographic and sample schedule.
 
 ```text
-index.html
-demo.html
+pawpal_website_demo.html
 assets/pawpal-ai-infographic.png
 ```
 
