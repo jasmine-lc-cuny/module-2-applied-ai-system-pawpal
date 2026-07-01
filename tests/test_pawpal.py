@@ -3,6 +3,23 @@ from datetime import date, timedelta
 from pawpal_system import Owner, Pet, Scheduler, Task
 
 
+def test_owner_persistence_round_trip(tmp_path):
+    owner = Owner("Jordan")
+    pet = Pet("Mochi", "dog")
+    pet.add_task(Task("Morning walk", "08:00", 30, priority="high"))
+    owner.add_pet(pet)
+    path = tmp_path / "owner.json"
+
+    owner.save_to_json(path)
+    reloaded = Owner.load_from_json(path)
+
+    assert reloaded.name == "Jordan"
+    assert len(reloaded.pets) == 1
+    assert reloaded.pets[0].name == "Mochi"
+    assert reloaded.pets[0].tasks[0].title == "Morning walk"
+    assert reloaded.pets[0].tasks[0].priority == "high"
+
+
 def test_task_completion_marks_status():
     task = Task("Feed breakfast", "07:30", 10)
 
@@ -78,3 +95,36 @@ def test_conflict_detection_flags_duplicate_times():
     assert "08:00" in warnings[0]
     assert "Mochi: Morning walk" in warnings[0]
     assert "Luna: Brush coat" in warnings[0]
+
+
+def test_scheduler_selects_urgent_task_by_priority_and_time():
+    owner = Owner("Jordan")
+    pet = Pet("Mochi", "dog")
+    pet.add_task(Task("Low priority check", "10:00", 10, priority="low"))
+    pet.add_task(Task("Medication", "07:00", 5, priority="high"))
+    pet.add_task(Task("Another high task", "08:00", 5, priority="high"))
+    owner.add_pet(pet)
+
+    urgent = Scheduler(owner).get_next_urgent_task()
+
+    assert urgent is not None
+    assert urgent[1].title == "Medication"
+
+
+def test_scheduler_returns_top_three_priority_tasks():
+    owner = Owner("Jordan")
+    pet = Pet("Mochi", "dog")
+    pet.add_task(Task("Low priority check", "10:00", 10, priority="low"))
+    pet.add_task(Task("Medication", "07:00", 5, priority="high"))
+    pet.add_task(Task("Another high task", "08:00", 5, priority="high"))
+    pet.add_task(Task("Medium task", "09:00", 10, priority="medium"))
+    owner.add_pet(pet)
+
+    top_three = Scheduler(owner).get_top_priority_tasks(limit=3)
+
+    assert len(top_three) == 3
+    assert [task.title for _, task in top_three] == [
+        "Medication",
+        "Another high task",
+        "Medium task",
+    ]

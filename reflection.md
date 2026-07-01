@@ -28,7 +28,7 @@ One tradeoff is that conflict detection only checks for exact same date and time
 
 **a. How you used AI**
 
-I used AI as a planning and implementation teammate. Codex helped turn the assignment requirements into a phased plan, create the UML and class skeletons, implement the OOP backend, wire the Streamlit UI, write tests, and update the documentation. The most helpful prompts were specific and phase-based, such as asking how the `Scheduler` should retrieve all tasks from an `Owner` or how to keep Streamlit objects in `st.session_state`. Keeping design, implementation, testing, and documentation separate made the project easier to review.
+I used GitHub Copilot as a planning and implementation teammate. GitHub Copilot helped turn the assignment requirements into a phased plan, create the UML and class skeletons, implement the OOP backend, wire the Streamlit UI, write tests, and update the documentation. The most helpful prompts were specific and phase-based, such as asking how the `Scheduler` should retrieve all tasks from an `Owner` or how to keep Streamlit objects in `st.session_state`. Keeping design, implementation, testing, and documentation separate made the project easier to review.
 
 **b. Judgment and verification**
 
@@ -60,4 +60,4 @@ In another iteration, I would add JSON persistence so pets and tasks survive aft
 
 **c. Key takeaway**
 
-My biggest takeaway is that being the lead architect means deciding what the AI should build, not just accepting everything it suggests. AI was helpful for scaffolding, algorithms, and tests, but I still had to choose the class relationships, keep the design understandable, and verify the behavior. Separate phases helped me stay organized because each chat or task had a clear purpose. The best results came from combining AI speed with human judgment about scope and readability.
+My biggest takeaway is that being the lead architect means deciding what the AI should build, not just accepting everything it suggests. GitHub Copilot was helpful for scaffolding, algorithms, and tests, but I still had to choose the class relationships, keep the design understandable, and verify the behavior. Separate phases helped me stay organized because each chat or task had a clear purpose. The best results came from combining AI speed with human judgment about scope and readability.

@@ -41,7 +41,7 @@ def main():
     print(f"PawPal+ schedule for {owner.name}")
     print("=" * 32)
 
-    print_schedule("Today's Schedule", scheduler.todays_schedule())
+    print_schedule("📅 Today's Schedule", scheduler.todays_schedule())
     print()
 
     print_schedule(
@@ -50,8 +50,22 @@ def main():
     )
     print()
 
+    urgent_task = scheduler.get_next_urgent_task()
+    if urgent_task is None:
+        print("Next Urgent Task")
+        print("  No tasks found.")
+    else:
+        pet, task = urgent_task
+        print("Next Urgent Task")
+        print(f"  {task.summary(pet.name)}")
+    print()
+
+    top_priority_tasks = scheduler.get_top_priority_tasks(limit=3)
+    print_schedule("⭐ Today's Top 3 Priorities", top_priority_tasks)
+    print()
+
     conflicts = scheduler.detect_conflicts(scheduler.todays_schedule())
-    print("Conflict Warnings")
+    print("⚠️ Conflict Warnings")
     if conflicts:
         for warning in conflicts:
             print(f"  {warning}")
@@ -65,7 +79,7 @@ def main():
         for pet, task in owner.all_tasks()
         if pet.name == "Mochi" and task.title == "Morning walk" and task.due_date > date.today()
     ]
-    print_schedule("Recurring Task Created", next_walks)
+    print_schedule("🔁 Recurring Task Created", next_walks)
 
 
 if __name__ == "__main__":

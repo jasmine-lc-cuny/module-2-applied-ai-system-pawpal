@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+from pathlib import Path
 
 
 PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
@@ -44,11 +46,36 @@ class Task:
     def summary(self, pet_name: str | None = None) -> str:
         """Return a readable one-line description for CLI output."""
         pet_prefix = f"{pet_name}: " if pet_name else ""
-        status = "done" if self.completed else "open"
+        status = "✅ done" if self.completed else "⏳ open"
         return (
             f"{self.time} - {pet_prefix}{self.title} "
             f"({self.duration_minutes} min, {self.priority}, "
             f"{self.frequency}, {self.due_date.isoformat()}, {status})"
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Convert this task into a JSON-friendly dictionary."""
+        return {
+            "title": self.title,
+            "time": self.time,
+            "duration_minutes": self.duration_minutes,
+            "priority": self.priority,
+            "frequency": self.frequency,
+            "due_date": self.due_date.isoformat(),
+            "completed": self.completed,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, object]) -> "Task":
+        """Create a task from a JSON-friendly dictionary."""
+        return cls(
+            title=str(data["title"]),
+            time=str(data["time"]),
+            duration_minutes=int(data["duration_minutes"]),
+            priority=str(data.get("priority", "medium")),
+            frequency=str(data.get("frequency", "once")),
+            due_date=date.fromisoformat(str(data.get("due_date", date.today().isoformat()))),
+            completed=bool(data.get("completed", False)),
         )
 
 
@@ -68,6 +95,27 @@ class Pet:
     def incomplete_tasks(self) -> list[Task]:
         """Return this pet's incomplete tasks."""
         return [task for task in self.tasks if not task.completed]
+
+    def to_dict(self) -> dict[str, object]:
+        """Convert this pet into a JSON-friendly dictionary."""
+        return {
+            "name": self.name,
+            "species": self.species,
+            "age": self.age,
+            "tasks": [task.to_dict() for task in self.tasks],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, object]) -> "Pet":
+        """Create a pet from a JSON-friendly dictionary."""
+        pet = cls(
+            name=str(data["name"]),
+            species=str(data["species"]),
+            age=None if data.get("age") is None else int(data["age"]),
+        )
+        for task_data in data.get("tasks", []):
+            pet.add_task(Task.from_dict(task_data))
+        return pet
 
 
 @dataclass
@@ -91,6 +139,36 @@ class Owner:
     def all_tasks(self) -> list[tuple[Pet, Task]]:
         """Return every task paired with the pet it belongs to."""
         return [(pet, task) for pet in self.pets for task in pet.tasks]
+
+    def to_dict(self) -> dict[str, object]:
+        """Convert this owner into a JSON-friendly dictionary."""
+        return {
+            "name": self.name,
+            "pets": [pet.to_dict() for pet in self.pets],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, object]) -> "Owner":
+        """Create an owner from a JSON-friendly dictionary."""
+        owner = cls(name=str(data["name"]))
+        for pet_data in data.get("pets", []):
+            owner.add_pet(Pet.from_dict(pet_data))
+        return owner
+
+    def save_to_json(self, path: str | Path):
+        """Persist this owner and all associated pets/tasks to JSON."""
+        file_path = Path(path)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        with file_path.open("w", encoding="utf-8") as handle:
+            json.dump(self.to_dict(), handle, indent=2)
+
+    @classmethod
+    def load_from_json(cls, path: str | Path) -> "Owner":
+        """Load an owner and its pets/tasks from JSON."""
+        file_path = Path(path)
+        with file_path.open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        return cls.from_dict(data)
 
 
 class Scheduler:
@@ -177,3 +255,17 @@ class Scheduler:
             if task.due_date == today and not task.completed
         ]
         return self.sort_by_time(open_today)
+
+    def get_next_urgent_task(self, tasks: list[tuple[Pet, Task]] | None = None):
+        """Return the highest-priority open task, breaking ties by earlier time."""
+        task_pairs = tasks if tasks is not None else self.todays_schedule()
+        if not task_pairs:
+            return None
+        return self.sort_by_priority_then_time(task_pairs)[0]
+
+    def get_top_priority_tasks(self, limit: int = 3, tasks: list[tuple[Pet, Task]] | None = None):
+        """Return the highest-priority tasks up to the requested limit."""
+        task_pairs = tasks if tasks is not None else self.todays_schedule()
+        if not task_pairs:
+            return []
+        return self.sort_by_priority_then_time(task_pairs)[:limit]

@@ -1,16 +1,28 @@
+from pathlib import Path
+
 import streamlit as st
 
 from pawpal_system import Owner, Pet, Scheduler, Task
 
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="wide")
+DATA_FILE = Path(__file__).with_name("data.json")
 
 
 def get_owner():
     """Return the session's owner object, creating it once if needed."""
     if "owner" not in st.session_state:
-        st.session_state.owner = Owner("Jordan")
+        if DATA_FILE.exists():
+            st.session_state.owner = Owner.load_from_json(DATA_FILE)
+        else:
+            st.session_state.owner = Owner("Jordan")
     return st.session_state.owner
+
+
+def persist_owner():
+    """Save the current owner data to disk for later sessions."""
+    owner = get_owner()
+    owner.save_to_json(DATA_FILE)
 
 
 def task_rows(task_pairs):
@@ -24,7 +36,7 @@ def task_rows(task_pairs):
             "Priority": task.priority,
             "Frequency": task.frequency,
             "Due Date": task.due_date.isoformat(),
-            "Status": "Done" if task.completed else "Open",
+            "Status": "✅ Done" if task.completed else "⏳ Open",
         }
         for pet, task in task_pairs
     ]
@@ -37,6 +49,7 @@ st.title("PawPal+")
 st.caption("A smart pet care scheduler for daily routines and reminders.")
 
 owner.name = st.sidebar.text_input("Owner name", value=owner.name)
+persist_owner()
 view_mode = st.sidebar.radio("Schedule view", ["Time", "Priority"], horizontal=True)
 pet_filter = st.sidebar.selectbox(
     "Filter by pet",
@@ -56,6 +69,7 @@ with left:
 
     if submitted_pet and pet_name.strip():
         owner.add_pet(Pet(pet_name.strip(), species, int(age)))
+        persist_owner()
         st.success(f"Added {pet_name.strip()}.")
         st.rerun()
 
@@ -97,6 +111,7 @@ with right:
                         frequency=frequency,
                     )
                 )
+                persist_owner()
                 st.success(f"Added {title.strip()} for {selected_pet}.")
                 st.rerun()
 
@@ -116,11 +131,18 @@ display_tasks = (
     else scheduler.sort_by_time(filtered)
 )
 
-st.subheader("Care Schedule")
+st.subheader("🗓️ Care Schedule")
 if display_tasks:
     st.table(task_rows(display_tasks))
 else:
     st.info("No tasks match the current filters.")
+
+st.subheader("⭐ Today's Top 3 Priorities")
+top_three = scheduler.get_top_priority_tasks(limit=3)
+if top_three:
+    st.table(task_rows(top_three))
+else:
+    st.info("No tasks available right now.")
 
 conflicts = scheduler.detect_conflicts(scheduler.filter_tasks(completed=False))
 if conflicts:
@@ -138,6 +160,7 @@ if owner.pets:
         if st.button("Mark complete"):
             pet_name, task_title = selected.split(" | ", 1)
             scheduler.mark_task_complete(pet_name, task_title)
+            persist_owner()
             st.success(f"Completed {task_title}.")
             st.rerun()
     else:
