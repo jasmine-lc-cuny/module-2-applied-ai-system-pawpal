@@ -1,8 +1,11 @@
+%%{init: { "securityLevel": "loose" }}%%
 flowchart TD
+    Hero("<img src='../assets/pawpal-ai-infographic.png' width='220' alt='PawPal AI infographic'/><br/>PawPal AI")
     A[Owner, pets, existing PawPal tasks] --> B[Scheduler]
     C[Owner care request] --> D[Care guide retriever]
     D --> E[Retrieved pet-care guidance]
     E --> F[AI care planner]
+    Hero --> F
     B --> F
     F --> G[Suggested tasks]
     F --> H[Reasoning steps and guardrails]
