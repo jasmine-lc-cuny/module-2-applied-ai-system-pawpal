@@ -29,18 +29,18 @@ The Mermaid source file is stored at `diagrams/architecture.mmd`.
 
 ```mermaid
 flowchart TD
-    A[Owner, pets, existing PawPal tasks] --> B[Scheduler]
-    C[Owner care request] --> D[Care guide retriever]
-    D --> E[Retrieved pet-care guidance]
-    E --> F[AI care planner]
+    A["Owner pets and current tasks"] --> B["PawPal scheduler"]
+    C["Owner care request"] --> D["Care guide retriever"]
+    D --> E["Retrieved pet care guidance"]
+    E --> F["AI care planner"]
     B --> F
-    F --> G[Suggested tasks]
-    F --> H[Reasoning steps and guardrails]
-    F --> I[Conflict check and confidence score]
-    G --> J[Apply suggestions to PawPal schedule]
-    H --> K[JSONL planning logs]
-    I --> L[Evaluation harness]
-    L --> M[Pass/fail reliability summary]
+    F --> G["Suggested tasks"]
+    F --> H["Reasoning steps and guardrails"]
+    F --> I["Conflict check and confidence score"]
+    G --> J["Apply suggestions to schedule"]
+    H --> K["JSONL planning logs"]
+    I --> L["Evaluation harness"]
+    L --> M["Pass fail reliability summary"]
 ```
 
 ## AI Features
